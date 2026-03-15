@@ -21,12 +21,7 @@ jobs:
             -scheme Release \
             -derivedDataPath DerivedData \
             MACOSX_DEPLOYMENT_TARGET=10.13 \
-            CODE_SIGN_IDENTITY="" \
-            CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGNING_ALLOWED=NO
-
-      - name: Ad-hoc sign
-        run: codesign -s - --force --deep DerivedData/Build/Products/Release/AltTab.app
+            CODE_SIGN_IDENTITY="-"
 
       - name: Package
         run: ditto -c -k --keepParent DerivedData/Build/Products/Release/AltTab.app AltTab.zip
