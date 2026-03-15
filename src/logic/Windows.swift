@@ -22,8 +22,8 @@ class Windows {
 
     private static func refreshAerospaceFilter() {
         let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/opt/homebrew/bin/aerospace")
-        process.arguments = ["list-windows", "--workspace", "focused", "--format", "%{window-id}"]
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/env")
+        process.arguments = ["aerospace", "list-windows", "--workspace", "focused", "--format", "%{window-id}"]
         let pipe = Pipe()
         process.standardOutput = pipe
         do {
