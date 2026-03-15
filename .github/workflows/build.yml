@@ -20,6 +20,7 @@ jobs:
             -workspace alt-tab-macos.xcworkspace \
             -scheme Release \
             -derivedDataPath DerivedData \
+            MACOSX_DEPLOYMENT_TARGET=10.13 \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO
