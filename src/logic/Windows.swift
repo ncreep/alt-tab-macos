@@ -20,10 +20,26 @@ class Windows {
         return window.shouldShowTheUser && Search.matches(window, query: searchQuery)
     }
 
+    // cached PATH from launchd, which includes paths set by nix-darwin's set-gui-path
+    private static var launchdPath: String? = {
+        let p = Process()
+        p.executableURL = URL(fileURLWithPath: "/bin/launchctl")
+        p.arguments = ["getenv", "PATH"]
+        let pipe = Pipe()
+        p.standardOutput = pipe
+        try? p.run()
+        p.waitUntilExit()
+        let data = pipe.fileHandleForReading.readDataToEndOfFile()
+        return String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines)
+    }()
+
     private static func refreshAerospaceFilter() {
         let process = Process()
         process.executableURL = URL(fileURLWithPath: "/usr/bin/env")
         process.arguments = ["aerospace", "list-windows", "--workspace", "focused", "--format", "%{window-id}"]
+        if let path = launchdPath {
+            process.environment = ["PATH": path]
+        }
         let pipe = Pipe()
         process.standardOutput = pipe
         do {
