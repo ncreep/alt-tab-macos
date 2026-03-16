@@ -2,6 +2,7 @@ import Cocoa
 
 class Windows {
     static var list = [Window]()
+    private static var aerospaceWorkspaceWindowIds: Set<CGWindowID>? = nil
     static var selectedWindowIndex = Int(0)
     static var selectedWindowTarget: String?
     static var hoveredWindowIndex: Int?
@@ -13,7 +14,42 @@ class Windows {
     private static var shouldRestoreDefaultSelectionOnSearchClear = false
 
     static func shouldDisplay(_ window: Window) -> Bool {
-        window.shouldShowTheUser && Search.matches(window, query: searchQuery)
+        if let ids = aerospaceWorkspaceWindowIds, let cgId = window.cgWindowId {
+            guard ids.contains(cgId) else { return false }
+        }
+        return window.shouldShowTheUser && Search.matches(window, query: searchQuery)
+    }
+
+    // cached PATH from launchd, which may include paths not visible to GUI apps by default
+    private static var launchdPath: String? = {
+        let p = Process()
+        p.executableURL = URL(fileURLWithPath: "/bin/launchctl")
+        p.arguments = ["getenv", "PATH"]
+        let pipe = Pipe()
+        p.standardOutput = pipe
+        try? p.run()
+        p.waitUntilExit()
+        let data = pipe.fileHandleForReading.readDataToEndOfFile()
+        return String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines)
+    }()
+
+    private static func refreshAerospaceFilter() {
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/env")
+        process.arguments = ["aerospace", "list-windows", "--workspace", "focused", "--format", "%{window-id}"]
+        if let path = launchdPath {
+            process.environment = ["PATH": path]
+        }
+        let pipe = Pipe()
+        process.standardOutput = pipe
+        do {
+            try process.run()
+            let data = pipe.fileHandleForReading.readDataToEndOfFile()
+            guard let output = String(data: data, encoding: .utf8) else { aerospaceWorkspaceWindowIds = nil; return }
+            aerospaceWorkspaceWindowIds = Set(output.split(separator: "\n").compactMap { CGWindowID($0.trimmingCharacters(in: .whitespaces)) })
+        } catch {
+            aerospaceWorkspaceWindowIds = nil
+        }
     }
 
     static func updateSearchQuery(_ query: String) {
@@ -111,6 +147,7 @@ class Windows {
         // workaround: when Preferences > Mission Control > "Displays have separate Spaces" is unchecked,
         // switching between displays doesn't trigger .activeSpaceDidChangeNotification; we get the latest manually
         Spaces.refresh()
+        refreshAerospaceFilter()
         let spaceIdsAndIndexes = Spaces.idsAndIndexes.map { $0.0 }
         lazy var cgsWindowIds = Spaces.windowsInSpaces(spaceIdsAndIndexes)
         lazy var visibleCgsWindowIds = Spaces.windowsInSpaces(spaceIdsAndIndexes, false)

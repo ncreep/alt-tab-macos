@@ -1,12 +1,21 @@
 <div align = center>
 
-# AltTab
+# AltTab (AeroSpace fork)
 
 [![Screenshot](docs/public/demo/frontpage.jpg)](docs/public/demo/frontpage.jpg)
 
 **AltTab** brings the power of Windows alt-tab to macOS
 
-[Official website](https://alt-tab-macos.netlify.app/)<br/><sub>15K stars</sub> | [Download](https://github.com/lwouis/alt-tab-macos/releases/download/v10.7.0/AltTab-10.7.0.zip)<br/><sub>7.1M downloads</sub>
+## AeroSpace integration
+
+This fork adds integration with [AeroSpace](https://github.com/nikitabobko/AeroSpace), a tiling window manager for macOS.
+The AeroSpace integration logic is based on [XOR-op/alt-tab-macos](https://github.com/XOR-op/alt-tab-macos).
+
+When AeroSpace is running, AltTab filters the window list to show only windows on the currently focused AeroSpace workspace. When AeroSpace is not running, AltTab behaves as normal.
+
+---
+
+[Official website](https://alt-tab-macos.netlify.app/)<br/><sub>15K stars</sub> | [Upstream](https://github.com/lwouis/alt-tab-macos)
 -|-
 
 <div align="right">
